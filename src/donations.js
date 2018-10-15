@@ -1,15 +1,9 @@
-import eatBCH from './assets/eatBCH.jpg'
-import eatBCH_SS from './assets/eatBCH_SS.jpg'
+import bchLogo from "./assets/bchLogo.png";
 
 export const donations = {
-  "pp8skudq3x5hzw8ew7vzsw8tn4k8wxsqsv0lt0mf3g": {
-    name: "EatBCH",
-    genre: "Venezeula",
-    image: eatBCH
-  },
-  "qrsrvtc95gg8rrag7dge3jlnfs4j9pe0ugrmeml950": {
-    name: "EatBCH_SS",
-    genre: "South Sudan",
-    image: eatBCH_SS
-  },
-}
+  qqdxf7lgk08ug6zwjvg585sz4v8d5t550v3jfsdfq5: {
+    name: "Lefay.cash",
+    genre: "DoubleSpend",
+    image: bchLogo
+  }
+};
