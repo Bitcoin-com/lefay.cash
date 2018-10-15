@@ -58,20 +58,20 @@ const Title = styled.h1`
   text-shadow: 2px 2px 4px #000;
 `;
 
-// const getOutputAddresses = outputs => {
-//   const addresses = outputs.reduce((prev, curr, idx) => {
-//     const addressArray = curr.scriptPubKey.addresses;
-//
-//     const value = BITBOX.BitcoinCash.toBitcoinCash(curr.satoshi);
-//
-//     const ret = addressArray.reduce((prev, curr, idx) => {
-//       return { ...prev, [curr]: { value } };
-//     }, {});
-//     return [...prev, { ...ret }];
-//   }, []);
-//
-//   return addresses;
-// };
+const getOutputAddresses = outputs => {
+  const addresses = outputs.reduce((prev, curr, idx) => {
+    const addressArray = curr.scriptPubKey.addresses;
+
+    const value = BITBOX.BitcoinCash.toBitcoinCash(curr.satoshi);
+
+    const ret = addressArray.reduce((prev, curr, idx) => {
+      return { ...prev, [curr]: { value } };
+    }, {});
+    return [...prev, { ...ret }];
+  }, []);
+
+  return addresses;
+};
 
 class App extends Component {
   constructor(props) {
@@ -107,10 +107,10 @@ class App extends Component {
     console.log(json);
     const outputs = json.outputs;
 
-    // const addresses = getOutputAddresses(outputs);
+    const addresses = getOutputAddresses(outputs);
 
     Object.keys(donations).forEach(p => {
-      outputs.scriptPubKey.addresses.forEach(a => {
+      addresses.forEach(a => {
         const key = Object.keys(a)[0];
 
         if (BITBOX.Address.toLegacyAddress(p) === key) {
