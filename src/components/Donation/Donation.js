@@ -3,8 +3,6 @@ import styled from "styled-components";
 import QRCode from "qrcode-react";
 import Notification from "../Notification";
 
-import bchLogo from "../../assets/bch-logo.png";
-
 const Wrapper = styled.div`
   position: relative;
   margin: 15px;
@@ -82,7 +80,7 @@ class Donation extends React.Component {
           <QRCode
             value={address}
             size={170}
-            logo={bchLogo}
+            logo="../../assets/bch-logo.png"
             logoWidth={70}
             logoHeight={45}
           />

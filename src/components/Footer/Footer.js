@@ -1,9 +1,6 @@
 import React from "react";
 import styled from "styled-components";
 
-import bitboxLogo from "../../assets/bitbox-logo.png";
-import bitcoinUnlimitedLogo from "../../assets/Bitcoin_Unlimited_logo.png";
-
 const Wrapper = styled.div`
   width: 100%;
   text-align: center;
@@ -66,7 +63,7 @@ class Footer extends React.Component {
     return (
       <Wrapper>
         <PoweredBy>
-          <Image src={bitboxLogo} alt="BITBOX" height="50" />
+          <Image src="../../assets/bitbox-logo.png" alt="BITBOX" height="50" />
           <PoweredByTitle>
             Powered by BITBOX
             <br />
@@ -75,7 +72,10 @@ class Footer extends React.Component {
         </PoweredBy>
         <Sponsors>
           <SponsorLogos>
-            <SponsorsImage src={bitcoinUnlimitedLogo} alt="Bitcoin Unlimited" />
+            <SponsorsImage
+              src="../../assets/Bitcoin_Unlimited_logo.png"
+              alt="Bitcoin Unlimited"
+            />
           </SponsorLogos>
         </Sponsors>
       </Wrapper>
