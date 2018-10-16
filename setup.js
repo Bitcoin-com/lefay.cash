@@ -12,17 +12,16 @@ let masterHDNode = BITBOX.HDNode.fromSeed(rootSeed, "bitcoincash");
 let account = BITBOX.HDNode.derivePath(masterHDNode, "m/44'/145'/0'");
 
 // derive the first external change address HDNode which is going to spend utxo
-let sender = BITBOX.HDNode.derivePath(account, "0/2");
+let lefay = BITBOX.HDNode.derivePath(account, "0/0");
 let receiver = BITBOX.HDNode.derivePath(account, "0/1");
 
 // get the cash address
-let senderCashAddress = BITBOX.HDNode.toCashAddress(sender);
+let lefayAddress = BITBOX.HDNode.toCashAddress(lefay);
 let receiverCashAddress = BITBOX.HDNode.toCashAddress(receiver);
-console.log(senderCashAddress);
+console.log(receiverCashAddress);
 // return false;
-// bitcoincash:qqn2yf5jzrhwr3magjps5muz30akqqgsm5q7wcgkga
 
-BITBOX.Address.utxo(senderCashAddress).then(
+BITBOX.Address.utxo(receiverCashAddress).then(
   result => {
     console.log(result);
     // return false;
@@ -50,10 +49,10 @@ BITBOX.Address.utxo(senderCashAddress).then(
     let sendAmount = originalAmount - byteCount;
 
     // add output w/ address and amount to send
-    transactionBuilder.addOutput(receiverCashAddress, sendAmount);
+    transactionBuilder.addOutput(lefayAddress, sendAmount);
 
     // keypair
-    let keyPair = BITBOX.HDNode.toKeyPair(sender);
+    let keyPair = BITBOX.HDNode.toKeyPair(receiver);
 
     // sign w/ HDNode
     let redeemScript;

@@ -1,5 +1,5 @@
 export const donations = {
-  qqdxf7lgk08ug6zwjvg585sz4v8d5t550v3jfsdfq5: {
+  qrcgrg69ey7mylken3gdyf2qtnygp7n76uyr30xqw7: {
     name: "Lefay.cash",
     genre: "DoubleSpend",
     image: "./assets/bchLogo.png"

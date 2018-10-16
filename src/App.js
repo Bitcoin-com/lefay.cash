@@ -5,6 +5,7 @@ import * as BITBOXCli from "bitbox-sdk/lib/bitbox-sdk";
 import Donation from "./components/Donation";
 import Footer from "./components/Footer";
 import { donations as initDonations } from "./donations";
+const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
 
 // initialise BITBOX
 const BITBOX = new BITBOXCli.default();
@@ -24,7 +25,7 @@ let masterHDNode = BITBOX.HDNode.fromSeed(rootSeed, "bitcoincash");
 let account = BITBOX.HDNode.derivePath(masterHDNode, "m/44'/145'/0'");
 
 // derive the first external change address HDNode which is going to spend utxo
-let change = BITBOX.HDNode.derivePath(account, "0/1");
+let change = BITBOX.HDNode.derivePath(account, "0/0");
 
 // get the cash address
 let cashAddress = BITBOX.HDNode.toCashAddress(change);
@@ -99,24 +100,24 @@ class App extends Component {
     this.handleUpdateAddressBalance(donationAddresses);
   }
 
-  handleNewTx(msg) {
+  async handleNewTx(msg) {
     const { donations, donationAddresses } = this.state;
     const json = JSON.parse(msg);
-    console.log(json);
+    // console.log(json);
     const outputs = json.outputs;
 
     const addresses = getOutputAddresses(outputs);
-    console.log("addresses", addresses);
+    // console.log("addresses", addresses);
 
     Object.keys(donations).forEach(p => {
       addresses.forEach(a => {
         const key = Object.keys(a)[0];
 
         if (BITBOX.Address.toLegacyAddress(p) === key) {
-          console.log("key", key);
+          // console.log("key", key);
           let input = json.inputs[0];
           let pubKey = input.script.split(" ")[1];
-          console.log("pubKey", pubKey);
+          // console.log("pubKey", pubKey);
           let pubkeyBuffer = Buffer.from(pubKey, "hex");
           let ecpair = BITBOX.ECPair.fromPublicKey(pubkeyBuffer);
           donations[p].input = BITBOX.ECPair.toCashAddress(ecpair);
@@ -129,14 +130,14 @@ class App extends Component {
           let originalAmount = BITBOX.BitcoinCash.toSatoshi(
             donations[p].lastTip
           );
-          console.log("originalAmount", originalAmount);
+          // console.log("originalAmount", originalAmount);
 
           // index of vout
           let vout = 0;
 
           // txid of vout
           let txid = json.format.txid;
-          console.log("txid", txid);
+          // console.log("txid", txid);
 
           // add input with txid and index of vout
           transactionBuilder.addInput(txid, vout);
@@ -170,31 +171,53 @@ class App extends Component {
           let tx = transactionBuilder.build();
           // output rawhex
           let hex = tx.toHex();
-          console.log(hex);
+          // console.log(hex);
 
+          let res = this.sendTx(hex, donations, p);
+          // console.log("response: ", res);
           // sendRawTransaction to running BCH node
-          BITBOX.RawTransactions.sendRawTransaction(hex).then(
-            result => {
-              donations[p].txid = result;
-              this.setState({
-                donations
-              });
-              setTimeout(() => {
-                donations[p].notification = false;
-                this.setState({
-                  donations
-                });
-              }, 5000);
-            },
-            err => {
-              console.log(err);
-            }
-          );
+          // BITBOX.RawTransactions.sendRawTransaction(hex).then(
+          //   result => {
+          //     donations[p].txid = result;
+          //     this.setState({
+          //       donations
+          //     });
+          //     setTimeout(() => {
+          //       donations[p].notification = false;
+          //       this.setState({
+          //         donations
+          //       });
+          //     }, 5000);
+          //   },
+          //   err => {
+          //     console.log(err);
+          //   }
+          // );
 
           this.handleUpdateAddressBalance(donationAddresses);
         }
       });
     });
+  }
+
+  async sendTx(hex, donations, p) {
+    //   // sendRawTransaction to running BCH node
+    let res = await BITBOX.RawTransactions.sendRawTransaction(hex);
+    if (res.length != 64) {
+      await sleep(2000);
+      this.sendTx(hex, donations, p);
+    }
+    donations[p].txid = res;
+    this.setState({
+      donations
+    });
+    setTimeout(() => {
+      donations[p].notification = false;
+      this.setState({
+        donations
+      });
+    }, 5000);
+    return res;
   }
 
   handleUpdateAddressBalance(addr) {
