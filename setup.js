@@ -27,7 +27,7 @@ BITBOX.Address.utxo(receiverCashAddress).then(
     // return false;
 
     // instance of transaction builder
-    let transactionBuilder = new BITBOX.TransactionBuilder("bitcoincash");
+    let transactionBuilder = new BITBOX.TransactionBuilder();
     // original amount of satoshis in vin
 
     let originalAmount = result[0].satoshis;

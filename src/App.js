@@ -4,15 +4,14 @@ import * as BITBOXCli from "bitbox-sdk/lib/bitbox-sdk";
 
 import Donation from "./components/Donation";
 import Footer from "./components/Footer";
-import { donations as initDonations } from "./donations";
 const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
 
-// initialise BITBOX
 const BITBOX = new BITBOXCli.default();
-
 // initialise socket connection
 const socket = new BITBOX.Socket();
-let mnemonic = process.env.mnemonic;
+
+let mnemonic =
+  "mucosa stufo impiego smontare cortese presenza sequenza radicale dalmata baccano ebano scarso gasolio parcella aguzzo velina davvero guaio cucire domenica scolpito crisi voragine rosolare";
 
 // root seed buffer
 let rootSeed = BITBOX.Mnemonic.toSeed(mnemonic);
@@ -28,6 +27,7 @@ let change = BITBOX.HDNode.derivePath(account, "0/0");
 
 // get the cash address
 let cashAddress = BITBOX.HDNode.toCashAddress(change);
+cashAddress = BITBOX.Address.toCashAddress(cashAddress, false);
 
 const Wrapper = styled.div`
   padding: 0;
@@ -61,11 +61,17 @@ const getOutputAddresses = outputs => {
   let finalArr = [];
   outputs.forEach((output, index) => {
     let obj = {};
-
-    obj[output.scriptPubKey.addresses[0]] = {
-      value: BITBOX.BitcoinCash.toBitcoinCash(output.satoshi)
-    };
-    finalArr.push(obj);
+    if (
+      output.scriptPubKey &&
+      output.scriptPubKey.addresses &&
+      output.scriptPubKey.addresses.length > 0
+    ) {
+      let tmp = BITBOX.Address.toCashAddress(output.scriptPubKey.addresses[0]);
+      obj[tmp] = {
+        value: BITBOX.BitcoinCash.toBitcoinCash(output.satoshi)
+      };
+      finalArr.push(obj);
+    }
   });
 
   return finalArr;
@@ -75,59 +81,50 @@ class App extends Component {
   constructor(props) {
     super(props);
 
-    const donationAddresses = Object.keys(initDonations).reduce(
-      (prev, curr, idx) => {
-        return [...prev, curr];
-      },
-      []
-    );
-
     this.state = {
-      donations: initDonations,
-      donationAddresses
+      balance: 0,
+      donationAddress: cashAddress,
+      notification: false
     };
 
     this.handleNewTx = this.handleNewTx.bind(this);
   }
 
   componentDidMount() {
-    const { donationAddresses } = this.state;
+    const { donationAddres } = this.state;
 
     // create listenner with callback for incomming transactions
     socket.listen("transactions", this.handleNewTx);
 
-    this.handleUpdateAddressBalance(donationAddresses);
+    this.handleUpdateAddressBalance(cashAddress);
   }
 
-  async handleNewTx(msg) {
-    const { donations, donationAddresses } = this.state;
-    const json = JSON.parse(msg);
-    // console.log(json);
-    const outputs = json.outputs;
+  async handleNewTx(newTx) {
+    let decodedTx = JSON.parse(newTx);
+    let outputs = decodedTx.outputs;
+    const outputAddresses = getOutputAddresses(outputs);
 
-    const addresses = getOutputAddresses(outputs);
-    // console.log("addresses", addresses);
+    outputAddresses.forEach(async addressObj => {
+      const outputAddress = Object.keys(addressObj)[0];
 
-    Object.keys(donations).forEach(async p => {
-      addresses.forEach(async a => {
-        const key = Object.keys(a)[0];
+      if (cashAddress === BITBOX.Address.toCashAddress(outputAddress, false)) {
+        let input = decodedTx.inputs[0];
+        let pubKey = input.script.split(" ")[1];
+        let pubkeyBuffer = Buffer.from(pubKey, "hex");
+        let ecpair = BITBOX.ECPair.fromPublicKey(pubkeyBuffer);
+        let tmpAddr = BITBOX.Address.toCashAddress(
+          BITBOX.ECPair.toCashAddress(ecpair),
+          false
+        );
 
-        if (BITBOX.Address.toLegacyAddress(p) === key) {
-          // console.log("key", key);
-          let input = json.inputs[0];
-          let pubKey = input.script.split(" ")[1];
-          // console.log("pubKey", pubKey);
-          let pubkeyBuffer = Buffer.from(pubKey, "hex");
-          let ecpair = BITBOX.ECPair.fromPublicKey(pubkeyBuffer);
-          donations[p].input = BITBOX.ECPair.toCashAddress(ecpair);
-          donations[p].lastTip = a[key].value;
-          donations[p].notification = true;
-          let u = await BITBOX.Address.utxo([cashAddress]);
-          const utxo = findBiggestUtxo(u[0], donations[p].txid);
-          console.log(utxo);
-
-          // instance of transaction builder
-          let transactionBuilder = new BITBOX.TransactionBuilder("bitcoincash");
+        input.lastTip = addressObj[outputAddress].value;
+        input.notification = true;
+        let u = await BITBOX.Address.utxo([cashAddress]);
+        // instance of transaction builder
+        if (tmpAddr != cashAddress) {
+          const utxo = this.findBiggestUtxo(u[0], input.txid);
+          // return false;
+          let transactionBuilder = new BITBOX.TransactionBuilder();
 
           // original amount of satoshis in vin
           let originalAmount = utxo.satoshis;
@@ -137,7 +134,6 @@ class App extends Component {
 
           // txid of vout
           let txid = utxo.txid;
-          // console.log("txid", txid);
 
           // add input with txid and index of vout
           transactionBuilder.addInput(txid, vout);
@@ -151,20 +147,15 @@ class App extends Component {
           // amount to send to receiver. It's the original amount - 1 sat/byte for tx size
           let sendAmount = originalAmount - byteCount;
 
-          // console.log(donations[p]);
-          // add output w/ address and amount to send
           transactionBuilder.addOutput(
-            donations[p].input,
-            BITBOX.BitcoinCash.toSatoshi(donations[p].lastTip)
+            BITBOX.ECPair.toCashAddress(ecpair),
+            BITBOX.BitcoinCash.toSatoshi(input.lastTip)
           );
 
-          console.log(
-            "foobar",
-            sendAmount - BITBOX.BitcoinCash.toSatoshi(donations[p].lastTip)
-          );
+          // send change back to main BIP44 account
           transactionBuilder.addOutput(
             cashAddress,
-            sendAmount - BITBOX.BitcoinCash.toSatoshi(donations[p].lastTip)
+            sendAmount - BITBOX.BitcoinCash.toSatoshi(input.lastTip)
           );
 
           // keypair
@@ -184,28 +175,29 @@ class App extends Component {
           let tx = transactionBuilder.build();
           // output rawhex
           let hex = tx.toHex();
-          // console.log(hex);
+          console.log(hex);
 
-          let res = this.sendTx(hex, donations, p);
+          let res = this.sendTx(hex, input, cashAddress);
 
-          this.handleUpdateAddressBalance(donationAddresses);
+          this.handleUpdateAddressBalance(cashAddress);
         }
-      });
+      }
     });
   }
 
-  async sendTx(hex, donations, p) {
+  async sendTx(hex, input, p) {
     // sendRawTransaction to running BCH node
     let res = await BITBOX.RawTransactions.sendRawTransaction(hex);
+    console.log("NEW TX RESULT: ", res);
     if (res.length == 64) {
-      donations[p].txid = res;
+      input.txid = res;
       this.setState({
-        donations
+        notification: true
       });
       setTimeout(() => {
-        donations[p].notification = false;
+        input.notification = false;
         this.setState({
-          donations
+          notification: false
         });
       }, 5000);
       return res;
@@ -218,67 +210,56 @@ class App extends Component {
     }
   }
 
-  handleUpdateAddressBalance(addr) {
-    const { donations } = this.state;
+  async handleUpdateAddressBalance(addr) {
+    let result = await BITBOX.Address.details(addr);
+    this.setState({
+      balance: result.balance
+    });
+  }
 
-    // pass array or string and update balances
-    BITBOX.Address.details(addr).then(
-      result => {
-        result.forEach(r => {
-          Object.keys(donations).forEach(p => {
-            donations[p].balance = (r.unconfirmedBalance + r.balance).toFixed(
-              8
-            );
-          });
-        });
-        this.setState({
-          donations
-        });
-      },
-      err => {
-        console.log(err);
+  findBiggestUtxo(utxos, txid) {
+    // console.log("findBiggestUtxo called", utxos);
+    let largestAmount = 0;
+    let largestIndex = 0;
+
+    for (let i = 0; i < utxos.length; i++) {
+      const thisUtxo = utxos[i];
+
+      if (
+        thisUtxo.satoshis > largestAmount &&
+        thisUtxo.txid !== txid &&
+        thisUtxo.satoshis
+      ) {
+        largestAmount = thisUtxo.satoshis;
+        largestIndex = i;
       }
-    );
+    }
+
+    return utxos[largestIndex];
   }
 
   render() {
-    const { donations, donationAddresses } = this.state;
+    const { donations, donationAddres } = this.state;
     // create 256 bit BIP39 mnemonic
     // console.log(cashAddress);
 
+    // console.log(donations);
     return (
       <Wrapper>
         <Title>Lefay.cash</Title>
         <Container>
-          {donationAddresses.map((address, i) => {
-            const donation = donations[address];
-
-            // converts legacy address to cashaddr and passes to donation component for display
-            const cashaddr = BITBOX.Address.toCashAddress(address);
-
-            return <Donation key={i} donation={donation} address={cashaddr} />;
-          })}
+          return (
+          <Donation
+            balance={this.state.balance}
+            address={cashAddress}
+            notification={this.state.notification}
+          />
+          );
         </Container>
         <Footer />
       </Wrapper>
     );
   }
-}
-
-function findBiggestUtxo(utxos, txid) {
-  let largestAmount = 0;
-  let largestIndex = 0;
-
-  for (let i = 0; i < utxos.length; i++) {
-    const thisUtxo = utxos[i];
-
-    if (thisUtxo.satoshis > largestAmount && thisUtxo.txid !== txid) {
-      largestAmount = thisUtxo.satoshis;
-      largestIndex = i;
-    }
-  }
-
-  return utxos[largestIndex];
 }
 
 export default App;

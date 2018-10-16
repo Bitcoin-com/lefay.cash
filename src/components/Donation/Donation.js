@@ -49,8 +49,7 @@ class Donation extends React.Component {
           </QRContainer>
           {shortAddr}
         </Address>
-        <Balance>Balance BCH: {donation.balance}</Balance>
-        <Notification donation={donation} show={donation.notification} />
+        <Balance>Balance BCH: {this.props.balance}</Balance>
       </Wrapper>
     );
   }
