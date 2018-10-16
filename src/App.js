@@ -109,8 +109,8 @@ class App extends Component {
     const addresses = getOutputAddresses(outputs);
     // console.log("addresses", addresses);
 
-    Object.keys(donations).forEach(p => {
-      addresses.forEach(a => {
+    Object.keys(donations).forEach(async p => {
+      addresses.forEach(async a => {
         const key = Object.keys(a)[0];
 
         if (BITBOX.Address.toLegacyAddress(p) === key) {
@@ -123,20 +123,21 @@ class App extends Component {
           donations[p].input = BITBOX.ECPair.toCashAddress(ecpair);
           donations[p].lastTip = a[key].value;
           donations[p].notification = true;
+          let u = await BITBOX.Address.utxo([cashAddress]);
+          const utxo = findBiggestUtxo(u[0]);
+          console.log(utxo);
+
           // instance of transaction builder
           let transactionBuilder = new BITBOX.TransactionBuilder("bitcoincash");
-          // original amount of satoshis in vin
 
-          let originalAmount = BITBOX.BitcoinCash.toSatoshi(
-            donations[p].lastTip
-          );
-          // console.log("originalAmount", originalAmount);
+          // original amount of satoshis in vin
+          let originalAmount = utxo.satoshis;
 
           // index of vout
-          let vout = 0;
+          let vout = utxo.vout;
 
           // txid of vout
-          let txid = json.format.txid;
+          let txid = utxo.txid;
           // console.log("txid", txid);
 
           // add input with txid and index of vout
@@ -145,14 +146,23 @@ class App extends Component {
           // get byte count to calculate fee. paying 1 sat/byte
           let byteCount = BITBOX.BitcoinCash.getByteCount(
             { P2PKH: 1 },
-            { P2PKH: 1 }
+            { P2PKH: 2 }
           );
 
           // amount to send to receiver. It's the original amount - 1 sat/byte for tx size
           let sendAmount = originalAmount - byteCount;
 
+          console.log(donations[p]);
           // add output w/ address and amount to send
-          transactionBuilder.addOutput(donations[p].input, sendAmount);
+          transactionBuilder.addOutput(
+            donations[p].input,
+            BITBOX.BitcoinCash.toSatoshi(donations[p].lastTip)
+          );
+
+          transactionBuilder.addOutput(
+            cashAddress,
+            sendAmount - BITBOX.BitcoinCash.toSatoshi(donations[p].lastTip)
+          );
 
           // keypair
           let keyPair = BITBOX.HDNode.toKeyPair(change);
@@ -174,25 +184,6 @@ class App extends Component {
           // console.log(hex);
 
           let res = this.sendTx(hex, donations, p);
-          // console.log("response: ", res);
-          // sendRawTransaction to running BCH node
-          // BITBOX.RawTransactions.sendRawTransaction(hex).then(
-          //   result => {
-          //     donations[p].txid = result;
-          //     this.setState({
-          //       donations
-          //     });
-          //     setTimeout(() => {
-          //       donations[p].notification = false;
-          //       this.setState({
-          //         donations
-          //       });
-          //     }, 5000);
-          //   },
-          //   err => {
-          //     console.log(err);
-          //   }
-          // );
 
           this.handleUpdateAddressBalance(donationAddresses);
         }
@@ -201,23 +192,27 @@ class App extends Component {
   }
 
   async sendTx(hex, donations, p) {
-    //   // sendRawTransaction to running BCH node
+    // sendRawTransaction to running BCH node
     let res = await BITBOX.RawTransactions.sendRawTransaction(hex);
-    if (res.length != 64) {
-      await sleep(2000);
-      this.sendTx(hex, donations, p);
-    }
-    donations[p].txid = res;
-    this.setState({
-      donations
-    });
-    setTimeout(() => {
-      donations[p].notification = false;
+    if (res.length == 64) {
+      donations[p].txid = res;
       this.setState({
         donations
       });
-    }, 5000);
-    return res;
+      setTimeout(() => {
+        donations[p].notification = false;
+        this.setState({
+          donations
+        });
+      }, 5000);
+      return res;
+      // } else if (res == "txn-mempool-conflict") {
+      //   console.log("response", res);
+      //   return false;
+      // } else {
+      //   await sleep(2000);
+      //   this.sendTx(hex, donations, p);
+    }
   }
 
   handleUpdateAddressBalance(addr) {
@@ -265,6 +260,22 @@ class App extends Component {
       </Wrapper>
     );
   }
+}
+
+function findBiggestUtxo(utxos) {
+  let largestAmount = 0;
+  let largestIndex = 0;
+
+  for (let i = 0; i < utxos.length; i++) {
+    const thisUtxo = utxos[i];
+
+    if (thisUtxo.satoshis > largestAmount) {
+      largestAmount = thisUtxo.satoshis;
+      largestIndex = i;
+    }
+  }
+
+  return utxos[largestIndex];
 }
 
 export default App;

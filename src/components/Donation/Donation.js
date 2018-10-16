@@ -13,10 +13,6 @@ const Wrapper = styled.div`
   grid-template-areas: "pic qr" "addr addr" "name name" "genre genre" "bal bal";
   grid-gap: 5px;
   justify-content: center;
-  background: #eee;
-  border-radius: 5px;
-  padding: 5px;
-  box-shadow: 0px 0px 2px #000;
 `;
 
 const Image = styled.div`
@@ -79,7 +75,6 @@ class Donation extends React.Component {
     const shortAddr = address.substring(12);
     return (
       <Wrapper>
-        <Notification donation={donation} show={donation.notification} />
         <QRContainer>
           <QRCode
             value={address}
@@ -96,6 +91,7 @@ class Donation extends React.Component {
           {shortAddr}
         </Address>
         <Balance>Balance BCH: {donation.balance}</Balance>
+        <Notification donation={donation} show={donation.notification} />
       </Wrapper>
     );
   }

@@ -103,12 +103,11 @@ class Notification extends React.Component {
     return (
       <Wrapper show={show}>
         <Image src={donation.image} />
-        <Name>
-          {donation.name} just received a payment from {donation.input}
-        </Name>
+        <Name>just received a payment from</Name>
+        <Name>{donation.input}</Name>
         <Tip>{donation.lastTip || 0.00500001} BCH</Tip>
+        <Tip>Sent back w/ txid:</Tip>
         <Tip>
-          Sent back w/ txid:
           <a
             target="_blank"
             href={`https://explorer.bitcoin.com/bch/tx/${donation.txid}`}
