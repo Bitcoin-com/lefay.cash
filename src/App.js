@@ -12,8 +12,7 @@ const BITBOX = new BITBOXCli.default();
 
 // initialise socket connection
 const socket = new BITBOX.Socket();
-let mnemonic =
-  "mucosa stufo impiego smontare cortese presenza sequenza radicale dalmata baccano ebano scarso gasolio parcella aguzzo velina davvero guaio cucire domenica scolpito crisi voragine rosolare";
+let mnemonic = process.env.mnemonic;
 
 // root seed buffer
 let rootSeed = BITBOX.Mnemonic.toSeed(mnemonic);
@@ -124,7 +123,7 @@ class App extends Component {
           donations[p].lastTip = a[key].value;
           donations[p].notification = true;
           let u = await BITBOX.Address.utxo([cashAddress]);
-          const utxo = findBiggestUtxo(u[0]);
+          const utxo = findBiggestUtxo(u[0], donations[p].txid);
           console.log(utxo);
 
           // instance of transaction builder
@@ -152,13 +151,17 @@ class App extends Component {
           // amount to send to receiver. It's the original amount - 1 sat/byte for tx size
           let sendAmount = originalAmount - byteCount;
 
-          console.log(donations[p]);
+          // console.log(donations[p]);
           // add output w/ address and amount to send
           transactionBuilder.addOutput(
             donations[p].input,
             BITBOX.BitcoinCash.toSatoshi(donations[p].lastTip)
           );
 
+          console.log(
+            "foobar",
+            sendAmount - BITBOX.BitcoinCash.toSatoshi(donations[p].lastTip)
+          );
           transactionBuilder.addOutput(
             cashAddress,
             sendAmount - BITBOX.BitcoinCash.toSatoshi(donations[p].lastTip)
@@ -241,7 +244,7 @@ class App extends Component {
   render() {
     const { donations, donationAddresses } = this.state;
     // create 256 bit BIP39 mnemonic
-    console.log(cashAddress);
+    // console.log(cashAddress);
 
     return (
       <Wrapper>
@@ -262,14 +265,14 @@ class App extends Component {
   }
 }
 
-function findBiggestUtxo(utxos) {
+function findBiggestUtxo(utxos, txid) {
   let largestAmount = 0;
   let largestIndex = 0;
 
   for (let i = 0; i < utxos.length; i++) {
     const thisUtxo = utxos[i];
 
-    if (thisUtxo.satoshis > largestAmount) {
+    if (thisUtxo.satoshis > largestAmount && thisUtxo.txid !== txid) {
       largestAmount = thisUtxo.satoshis;
       largestIndex = i;
     }
