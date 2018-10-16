@@ -2,6 +2,9 @@ import React from "react";
 import styled from "styled-components";
 import QRCode from "qrcode-react";
 import Notification from "../Notification";
+import * as BITBOXCli from "bitbox-sdk/lib/bitbox-sdk";
+// initialise BITBOX
+const BITBOX = new BITBOXCli.default();
 
 const Wrapper = styled.div`
   position: relative;
@@ -12,7 +15,7 @@ const Wrapper = styled.div`
   background: #eee;
   border-radius: 5px;
   padding: 5px;
-  box-shadow: 1px 1px 2px #000;
+  box-shadow: 0px 0px 2px #000;
 `;
 
 const Image = styled.div`
@@ -86,6 +89,7 @@ class Donation extends React.Component {
           />
         </QRContainer>
         <Address href={address}>{shortAddr}</Address>
+        <Balance>Balance BCH: {donation.balance}</Balance>
       </Wrapper>
     );
   }

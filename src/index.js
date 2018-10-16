@@ -1,8 +1,8 @@
-import React from 'react';
-import ReactDOM from 'react-dom';
-import App from './App';
-import { injectGlobal } from 'styled-components'
-import registerServiceWorker from './registerServiceWorker';
+import React from "react";
+import ReactDOM from "react-dom";
+import App from "./App";
+import { injectGlobal } from "styled-components";
+import registerServiceWorker from "./registerServiceWorker";
 
 injectGlobal`
     body,html {
@@ -15,7 +15,7 @@ injectGlobal`
     body {
         width: 100wh;
         color: #fff;
-        background: linear-gradient(-45deg, #EE7752, #E73C7E, #23A6D5, #23D5AB);
+        background: white;
         background-size: 400% 400%;
         -webkit-animation: Gradient 15s ease infinite;
         -moz-animation: Gradient 15s ease infinite;
@@ -58,7 +58,7 @@ injectGlobal`
 	}
 }
 
-`
+`;
 
-ReactDOM.render(<App />, document.getElementById('root'));
+ReactDOM.render(<App />, document.getElementById("root"));
 registerServiceWorker();

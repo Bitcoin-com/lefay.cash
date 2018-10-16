@@ -18,13 +18,14 @@ let receiver = BITBOX.HDNode.derivePath(account, "0/1");
 // get the cash address
 let senderCashAddress = BITBOX.HDNode.toCashAddress(sender);
 let receiverCashAddress = BITBOX.HDNode.toCashAddress(receiver);
-// console.log(cashAddress);
+console.log(senderCashAddress);
 // return false;
 // bitcoincash:qqn2yf5jzrhwr3magjps5muz30akqqgsm5q7wcgkga
 
 BITBOX.Address.utxo(senderCashAddress).then(
   result => {
     console.log(result);
+    // return false;
 
     // instance of transaction builder
     let transactionBuilder = new BITBOX.TransactionBuilder("bitcoincash");
