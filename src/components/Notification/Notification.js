@@ -107,7 +107,15 @@ class Notification extends React.Component {
           {donation.name} just received a payment from {donation.input}
         </Name>
         <Tip>{donation.lastTip || 0.00500001} BCH</Tip>
-        <Tip>Sent back w/ txid: {donation.txid}</Tip>
+        <Tip>
+          Sent back w/ txid:
+          <a
+            target="_blank"
+            href={`https://explorer.bitcoin.com/bch/tx/${donation.txid}`}
+          >
+            {donation.txid}
+          </a>
+        </Tip>
       </Wrapper>
     );
   }

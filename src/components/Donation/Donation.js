@@ -7,6 +7,7 @@ import * as BITBOXCli from "bitbox-sdk/lib/bitbox-sdk";
 const BITBOX = new BITBOXCli.default();
 
 const Wrapper = styled.div`
+  text-align: center;
   position: relative;
   margin: 15px;
   grid-template-areas: "pic qr" "addr addr" "name name" "genre genre" "bal bal";
@@ -88,7 +89,12 @@ class Donation extends React.Component {
             logoHeight={45}
           />
         </QRContainer>
-        <Address href={address}>{shortAddr}</Address>
+        <Address
+          target="_blank"
+          href="https://explorer.bitcoin.com/bch/address/bitcoincash:qrcgrg69ey7mylken3gdyf2qtnygp7n76uyr30xqw7"
+        >
+          {shortAddr}
+        </Address>
         <Balance>Balance BCH: {donation.balance}</Balance>
       </Wrapper>
     );
