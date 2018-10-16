@@ -50,6 +50,12 @@ class Donation extends React.Component {
           {shortAddr}
         </Address>
         <Balance>Balance BCH: {this.props.balance}</Balance>
+        <Notification
+          lastTip={this.props.lastTip}
+          input={this.props.input}
+          show={this.props.notification}
+          txid={this.props.txid}
+        />
       </Wrapper>
     );
   }

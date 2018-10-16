@@ -104,15 +104,15 @@ class Notification extends React.Component {
       <Wrapper show={show}>
         <Image src="../assets/bchLogo.png" />
         <Name>just received a payment from</Name>
-        <Name>{donation.input}</Name>
-        <Tip>{donation.lastTip || 0.00500001} BCH</Tip>
+        <Name>{this.props.input}</Name>
+        <Tip>{this.props.lastTip || 0.00500001} BCH</Tip>
         <Tip>Sent back w/ txid:</Tip>
         <Tip>
           <a
             target="_blank"
-            href={`https://explorer.bitcoin.com/bch/tx/${donation.txid}`}
+            href={`https://explorer.bitcoin.com/bch/tx/${this.props.txid}`}
           >
-            {donation.txid}
+            {this.props.txid}
           </a>
         </Tip>
       </Wrapper>

@@ -188,11 +188,13 @@ class App extends Component {
   async sendTx(hex, input, p) {
     // sendRawTransaction to running BCH node
     let res = await BITBOX.RawTransactions.sendRawTransaction(hex);
-    console.log("NEW TX RESULT: ", res);
     if (res.length == 64) {
       input.txid = res;
       this.setState({
-        notification: true
+        notification: true,
+        input: p,
+        lastTip: input.lastTip,
+        txid: res
       });
       setTimeout(() => {
         input.notification = false;
@@ -218,7 +220,6 @@ class App extends Component {
   }
 
   findBiggestUtxo(utxos, txid) {
-    // console.log("findBiggestUtxo called", utxos);
     let largestAmount = 0;
     let largestIndex = 0;
 
@@ -239,11 +240,6 @@ class App extends Component {
   }
 
   render() {
-    const { donations, donationAddres } = this.state;
-    // create 256 bit BIP39 mnemonic
-    // console.log(cashAddress);
-
-    // console.log(donations);
     return (
       <Wrapper>
         <Title>Lefay.cash</Title>
@@ -253,6 +249,9 @@ class App extends Component {
             balance={this.state.balance}
             address={cashAddress}
             notification={this.state.notification}
+            lastTip={this.state.lastTip}
+            input={this.state.input}
+            txid={this.state.txid}
           />
           );
         </Container>
