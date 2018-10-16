@@ -32,6 +32,11 @@ const PoweredBy = styled.div`
   justify-content: left;
 `;
 
+const Link = styled.a`
+  text-decoration: none;
+  color: black;
+`;
+
 const PoweredByTitle = styled.h2`
   margin: 0;
 `;
@@ -63,19 +68,27 @@ class Footer extends React.Component {
     return (
       <Wrapper>
         <PoweredBy>
-          <Image src="../../assets/bitbox-logo.png" alt="BITBOX" height="50" />
-          <PoweredByTitle>
-            Powered by BITBOX
-            <br />
-            developer.bitcoin.com
-          </PoweredByTitle>
+          <Link href="https://developer.bitcoin.com" target="_blank">
+            <Image
+              src="../../assets/bitbox-logo.png"
+              alt="BITBOX"
+              height="50"
+            />
+            <PoweredByTitle>
+              Powered by BITBOX
+              <br />
+              developer.bitcoin.com
+            </PoweredByTitle>
+          </Link>
         </PoweredBy>
         <Sponsors>
           <SponsorLogos>
-            <SponsorsImage
-              src="../../assets/Bitcoin_Unlimited_logo.png"
-              alt="Bitcoin Unlimited"
-            />
+            <a href="https://www.bitcoinunlimited.info/" target="_blank">
+              <SponsorsImage
+                src="../../assets/Bitcoin_Unlimited_logo.png"
+                alt="Bitcoin Unlimited"
+              />
+            </a>
           </SponsorLogos>
         </Sponsors>
       </Wrapper>

@@ -8,60 +8,19 @@ const BITBOX = new BITBOXCli.default();
 
 const Wrapper = styled.div`
   text-align: center;
-  position: relative;
-  margin: 15px;
-  grid-template-areas: "pic qr" "addr addr" "name name" "genre genre" "bal bal";
-  grid-gap: 5px;
-  justify-content: center;
-`;
-
-const Image = styled.div`
-  grid-area: pic;
-  background: url(${props => props.image}) no-repeat center center;
-  background-size: cover;
-  width: 170px;
-  margin: auto 10px;
-  margin-right: 0px;
-  padding: 10px;
-  box-sizing: border-box;
-  display: flex;
-  align-items: center;
 `;
 
 const QRContainer = styled.div`
-  grid-area: qr;
-  padding: 10px;
-  box-sizing: border-box;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  padding-bottom: 25px;
 `;
 
 const Address = styled.a`
   text-decoration: none;
   color: #000;
-  grid-area: addr;
-  z-index: 10;
-  text-size: 14px;
-  text-align: center;
-`;
-
-const Name = styled.h2`
-  grid-area: name;
-  color: #000;
-  text-align: center;
-  margin: 5px auto;
-`;
-
-const Genre = styled.p`
-  grid-area: genre;
-  color: #000;
-  text-align: center;
-  margin: 0;
 `;
 
 const Balance = styled.div`
-  grid-area: bal;
+  margin-top: 25px;
   font-size: 36px;
   font-weight: 700;
   color: #000;
@@ -75,19 +34,19 @@ class Donation extends React.Component {
     const shortAddr = address.substring(12);
     return (
       <Wrapper>
-        <QRContainer>
-          <QRCode
-            value={address}
-            size={170}
-            logo="../../assets/bch-logo.png"
-            logoWidth={70}
-            logoHeight={45}
-          />
-        </QRContainer>
         <Address
           target="_blank"
           href="https://explorer.bitcoin.com/bch/address/bitcoincash:qrcgrg69ey7mylken3gdyf2qtnygp7n76uyr30xqw7"
         >
+          <QRContainer>
+            <QRCode
+              value={address}
+              size={170}
+              logo="../../assets/bch-logo.png"
+              logoWidth={70}
+              logoHeight={45}
+            />
+          </QRContainer>
           {shortAddr}
         </Address>
         <Balance>Balance BCH: {donation.balance}</Balance>

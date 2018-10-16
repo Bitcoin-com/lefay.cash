@@ -13,7 +13,7 @@ let account = BITBOX.HDNode.derivePath(masterHDNode, "m/44'/145'/0'");
 
 // derive the first external change address HDNode which is going to spend utxo
 let lefay = BITBOX.HDNode.derivePath(account, "0/0");
-let receiver = BITBOX.HDNode.derivePath(account, "0/0");
+let receiver = BITBOX.HDNode.derivePath(account, "0/1");
 
 // get the cash address
 let lefayAddress = BITBOX.HDNode.toCashAddress(lefay);
@@ -49,10 +49,7 @@ BITBOX.Address.utxo(receiverCashAddress).then(
     let sendAmount = originalAmount - byteCount;
 
     // add output w/ address and amount to send
-    transactionBuilder.addOutput(
-      "bitcoincash:qrzfes3shupenhg0dvnmsee7uzaz8k6ycgppulzvpk",
-      sendAmount
-    );
+    transactionBuilder.addOutput(lefayAddress, sendAmount);
 
     // keypair
     let keyPair = BITBOX.HDNode.toKeyPair(receiver);
