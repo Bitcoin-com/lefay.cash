@@ -1,7 +1,6 @@
 let BITBOXSDK = require("bitbox-sdk/lib/bitbox-sdk").default;
 const BITBOX = new BITBOXSDK();
-let mnemonic =
-  "mucosa stufo impiego smontare cortese presenza sequenza radicale dalmata baccano ebano scarso gasolio parcella aguzzo velina davvero guaio cucire domenica scolpito crisi voragine rosolare";
+let mnemonic = "";
 // root seed buffer
 let rootSeed = BITBOX.Mnemonic.toSeed(mnemonic);
 
@@ -18,14 +17,9 @@ let receiver = BITBOX.HDNode.derivePath(account, "0/1");
 // get the cash address
 let lefayAddress = BITBOX.HDNode.toCashAddress(lefay);
 let receiverCashAddress = BITBOX.HDNode.toCashAddress(receiver);
-console.log(receiverCashAddress);
-// return false;
 
 BITBOX.Address.utxo(receiverCashAddress).then(
   result => {
-    console.log(result);
-    // return false;
-
     // instance of transaction builder
     let transactionBuilder = new BITBOX.TransactionBuilder();
     // original amount of satoshis in vin

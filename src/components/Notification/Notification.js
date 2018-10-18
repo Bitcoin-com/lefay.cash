@@ -14,7 +14,7 @@ const Wrapper = styled.div`
         `} display: flex;
   position: absolute;
   left: 50%;
-  top: 50%;
+  top: 70%;
   width: 80%;
   height: 80%;
   margin-left: -40%;

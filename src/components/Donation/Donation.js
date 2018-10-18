@@ -30,8 +30,6 @@ const Balance = styled.div`
 class Donation extends React.Component {
   render() {
     const { donation, address } = this.props;
-
-    const shortAddr = address.substring(12);
     return (
       <Wrapper>
         <Address
@@ -47,7 +45,7 @@ class Donation extends React.Component {
               logoHeight={45}
             />
           </QRContainer>
-          {shortAddr}
+          {address}
         </Address>
         <Balance>Balance BCH: {this.props.balance}</Balance>
         <Notification

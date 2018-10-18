@@ -1,10 +1,9 @@
 {
-  "name": "bitbox-scaffold-websockets",
+  "name": "lefay.cash",
   "license": "MIT",
-  "description": "BITBOX Websockets scaffold. Monitors addresses and notifies upon receiving a donation",
-  "author": "Paul Bergamo @ Bitcoin.com",
-  "version": "2.0.2",
-  "private": true,
+  "description": "Double spend game for Satoshi's Vision 2018 Milan",
+  "author": "Gabriel Cardona @ Bitcoin.com",
+  "version": "1.0.0",
   "dependencies": {
     "node-sass": "^4.9.0",
     "qrcode-react": "^0.1.16",

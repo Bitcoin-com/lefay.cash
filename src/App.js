@@ -10,8 +10,7 @@ const BITBOX = new BITBOXCli.default();
 // initialise socket connection
 const socket = new BITBOX.Socket();
 
-let mnemonic =
-  "mucosa stufo impiego smontare cortese presenza sequenza radicale dalmata baccano ebano scarso gasolio parcella aguzzo velina davvero guaio cucire domenica scolpito crisi voragine rosolare";
+let mnemonic = "";
 
 // root seed buffer
 let rootSeed = BITBOX.Mnemonic.toSeed(mnemonic);
@@ -175,7 +174,6 @@ class App extends Component {
           let tx = transactionBuilder.build();
           // output rawhex
           let hex = tx.toHex();
-          console.log(hex);
 
           let res = this.sendTx(hex, input, cashAddress);
 
@@ -187,12 +185,19 @@ class App extends Component {
 
   async sendTx(hex, input, p) {
     // sendRawTransaction to running BCH node
+    let pubKey = input.script.split(" ")[1];
+    let pubkeyBuffer = Buffer.from(pubKey, "hex");
+    let ecpair = BITBOX.ECPair.fromPublicKey(pubkeyBuffer);
+    let tmpAddr = BITBOX.Address.toCashAddress(
+      BITBOX.ECPair.toCashAddress(ecpair),
+      false
+    );
     let res = await BITBOX.RawTransactions.sendRawTransaction(hex);
     if (res.length == 64) {
       input.txid = res;
       this.setState({
         notification: true,
-        input: p,
+        input: tmpAddr,
         lastTip: input.lastTip,
         txid: res
       });
@@ -203,12 +208,6 @@ class App extends Component {
         });
       }, 5000);
       return res;
-      // } else if (res == "txn-mempool-conflict") {
-      //   console.log("response", res);
-      //   return false;
-      // } else {
-      //   await sleep(2000);
-      //   this.sendTx(hex, donations, p);
     }
   }
 
